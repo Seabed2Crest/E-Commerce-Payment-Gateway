@@ -53,7 +53,7 @@ public class SubscriptionPaymentEntity {
     private LocalDateTime paymentCompletedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_type", nullable = false)
+    @Column(name = "payment_type")
     private PaymentType paymentType;
 
     @JdbcTypeCode(SqlTypes.JSON)

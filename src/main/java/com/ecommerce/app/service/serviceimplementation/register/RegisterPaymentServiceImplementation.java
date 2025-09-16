@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -39,6 +40,7 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
 
     public static final String RAZORPAY_PAYMENT_GATEWAY = "Razorpay Payment Gateway";
 
+    @Transactional
     @Override
     public ApiResponse<RegisterPaymentResponse> paymentRegister(RegisterPaymentRequest request) {
         try {
@@ -65,6 +67,7 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
         }
     }
 
+    @Transactional
     @Override
     public ApiResponse<VerifyPaymentResponse> verifyRegister(VerifyRegisterRequest request) {
         try {

@@ -9,5 +9,5 @@ public interface TenantPaymentRepository extends JpaRepository<TenantCustomerPay
 
     TenantCustomerPaymentEntity findByRazorPayOrderId(String razorPayOrderId);
 
-    TenantCustomerPaymentEntity findByCustomerIdAndRazorPayOrderId(String customerId, String razorPayOrderId);
+    TenantCustomerPaymentEntity findByTenantIdAndRazorPayOrderId(String tenantId, String razorPayOrderId);
 }

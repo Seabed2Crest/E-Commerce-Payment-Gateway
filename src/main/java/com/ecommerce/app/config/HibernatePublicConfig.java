@@ -20,7 +20,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.payment.app.repository.publicschema",
+        basePackages = "com.ecommerce.app.repository.publicschema",
         entityManagerFactoryRef = "publicEntityManagerFactory",
         transactionManagerRef = "publicTransactionManager"
 )
@@ -34,7 +34,7 @@ public class HibernatePublicConfig {
 
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
-        emf.setPackagesToScan("com.payment.app.entity.publicschema");
+        emf.setPackagesToScan("com.ecommerce.app.entity.publicschema");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Map<String, Object> properties = new HashMap<>(jpaProperties.getProperties());

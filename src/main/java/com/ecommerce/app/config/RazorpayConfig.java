@@ -1,6 +1,6 @@
 package com.ecommerce.app.config;
 
-import com.payment.app.exception.internalservererror.ResourceInternalServerErrorException;
+import com.ecommerce.app.exception.type.ResourceException;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import lombok.Getter;
@@ -24,7 +24,7 @@ public class RazorpayConfig {
     @Bean
     public RazorpayClient razorpayClient() throws RazorpayException {
         if (keyID == null || keySecret == null) {
-            throw new ResourceInternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            throw new ResourceException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     HttpStatus.INTERNAL_SERVER_ERROR.name(),
                     "Razorpay key ID or secret is not configured.");
         }

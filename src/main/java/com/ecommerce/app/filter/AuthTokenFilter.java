@@ -1,7 +1,7 @@
 package com.ecommerce.app.filter;
 
-import com.payment.app.schema.TenantContextHolder;
-import com.payment.app.service.servicelayer.token.AuthTokenService;
+import com.ecommerce.app.schema.TenantContextHolder;
+import com.ecommerce.app.service.servicelayer.token.AuthTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static com.payment.app.util.SecurityConstantsUrl.getWhiteListUrls;
+import static com.ecommerce.app.util.SecurityConstantsUrl.getWhiteListUrls;
+
 
 @Component
 @Slf4j

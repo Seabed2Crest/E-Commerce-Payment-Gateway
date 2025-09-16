@@ -43,7 +43,7 @@ public class TenantCustomerPaymentEntity {
     @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
-    @Column(name = "payment_type", nullable = false)
+    @Column(name = "payment_type")
     private String paymentType;
 
     @Enumerated(EnumType.STRING)

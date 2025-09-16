@@ -22,7 +22,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.payment.app.repository.tenantschema",
+        basePackages = "com.ecommerce.app.repository.tenantschema",
         entityManagerFactoryRef = "tenantEntityManagerFactory",
         transactionManagerRef = "tenantTransactionManager"
 )
@@ -37,7 +37,7 @@ public class HibernateTenantConfig {
     ) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
-        emf.setPackagesToScan("com.payment.app.entity.tenantschema");
+        emf.setPackagesToScan("com.ecommerce.app.entity.tenantschema");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Map<String, Object> properties = new HashMap<>(jpaProperties.getProperties());

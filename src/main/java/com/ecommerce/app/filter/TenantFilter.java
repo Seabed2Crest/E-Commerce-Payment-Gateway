@@ -1,6 +1,6 @@
 package com.ecommerce.app.filter;
 
-import com.payment.app.schema.TenantContextHolder;
+import com.ecommerce.app.schema.TenantContextHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

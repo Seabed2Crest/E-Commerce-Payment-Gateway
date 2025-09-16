@@ -13,6 +13,7 @@ import com.ecommerce.app.service.common.RazorpayServiceMapper;
 import com.ecommerce.app.service.servicelayer.tenant.TenantPaymentService;
 import com.ecommerce.app.util.Constants;
 import com.ecommerce.app.util.Generator;
+import com.ecommerce.app.validations.annotationvalidator.TenantTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,7 @@ public class TenantPaymentServiceImplementation implements TenantPaymentService 
 
     private final RazorpayServiceMapper razorpayServiceMapper;
 
+    @TenantTransactional
     @Override
     public ApiResponse<TenantPaymentResponse> tenantCreatePayment(PaymentRequest paymentRequest) {
         try {
@@ -61,11 +63,12 @@ public class TenantPaymentServiceImplementation implements TenantPaymentService 
         }
     }
 
+    @TenantTransactional
     @Override
     public ApiResponse<TenantVerifyPaymentResponse> tenantVerifyPayment(VerifyPaymentRequest paymentRequest) {
         try {
             log.info("Tenant Verify Payment Request: {}", paymentRequest);
-            TenantCustomerPaymentEntity entity = tenantPaymentRepository.findByCustomerIdAndRazorPayOrderId(paymentRequest.getTenantId(), paymentRequest.getRazorPayOrderId());
+            TenantCustomerPaymentEntity entity = tenantPaymentRepository.findByTenantIdAndRazorPayOrderId(paymentRequest.getTenantId(), paymentRequest.getRazorPayOrderId());
             if (isNull(entity)) {
                 log.error("Tenant Verify Payment: Payment account not found for the razorpay order id : {} and customer id: {}", paymentRequest.getRazorPayPaymentId(), paymentRequest.getTenantId());
                 throw new ResourceException(
