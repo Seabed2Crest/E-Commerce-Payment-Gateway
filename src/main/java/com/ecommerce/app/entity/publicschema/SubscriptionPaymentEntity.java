@@ -62,5 +62,6 @@ public class SubscriptionPaymentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_subscription_id", nullable = false)
+    @ToString.Exclude
     private TenantSubscriptionEntity tenantSubscription;
 }

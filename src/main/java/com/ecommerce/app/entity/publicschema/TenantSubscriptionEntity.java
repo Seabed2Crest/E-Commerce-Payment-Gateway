@@ -50,5 +50,6 @@ public class TenantSubscriptionEntity {
     private Boolean isSubscriptionActive = false;
 
     @OneToMany(mappedBy = "tenantSubscription", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<SubscriptionPaymentEntity> subscriptionPayments = new ArrayList<>();
 }

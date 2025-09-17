@@ -176,7 +176,7 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
             JsonNode root = mapper.readTree(fetchPaymentResponse);
 
             String method = root.path("method").asText();
-            subscriptionPayment.setPaymentType(PaymentType.valueOf(method));
+            subscriptionPayment.setPaymentType(PaymentType.fromString(method));
 
             JsonNode paymentDetailsNode = buildPaymentDetailsNode(root, method, mapper);
 
