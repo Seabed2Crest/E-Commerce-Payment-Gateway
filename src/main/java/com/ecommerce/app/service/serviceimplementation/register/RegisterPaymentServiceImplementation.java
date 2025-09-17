@@ -3,6 +3,7 @@ package com.ecommerce.app.service.serviceimplementation.register;
 import com.ecommerce.app.entity.publicschema.SubscriptionPaymentEntity;
 import com.ecommerce.app.entity.publicschema.TenantSubscriptionEntity;
 import com.ecommerce.app.enums.PaymentStatus;
+import com.ecommerce.app.enums.PaymentType;
 import com.ecommerce.app.enums.ServiceType;
 import com.ecommerce.app.exception.type.ResourceException;
 import com.ecommerce.app.repository.publicschema.TenantSubscriptionRepository;
@@ -16,14 +17,21 @@ import com.ecommerce.app.service.common.RazorpayServiceMapper;
 import com.ecommerce.app.service.servicelayer.register.RegisterPaymentService;
 import com.ecommerce.app.util.Constants;
 import com.ecommerce.app.util.Generator;
+import com.ecommerce.app.util.PaymentConstants;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -39,6 +47,8 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
     private final TenantSchemaService tenantSchemaService;
 
     public static final String RAZORPAY_PAYMENT_GATEWAY = "Razorpay Payment Gateway";
+
+    public static final String FETCH_PAYMENT_URL = "https://api.razorpay.com/v1/payments/";
 
     @Transactional
     @Override
@@ -98,6 +108,10 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
                 entity.setIsSubscriptionActive(false);
                 log.warn("Payment verification failed for orderId: {}", request.getRazorPayOrderId());
             }
+
+            String url = FETCH_PAYMENT_URL + request.getRazorPayPaymentId();
+            String fetchPaymentResponse = razorpayServiceMapper.sendHttpRequest(url, null, HttpMethod.GET, "Failed To Retrieve Payment Details");
+            mapToPaymentDetails(fetchPaymentResponse, entity);
             tenantSubscriptionRepository.save(entity);
 
             String message = isSuccess ? Constants.PAYMENT_SUCCESS_MSG : Constants.PAYMENT_FAILED_MSG;
@@ -128,11 +142,7 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
         entity.setServicesEnabled(request.getServicesEnabled());
         entity.setIsAutoPaymentEnabled(request.getIsAutoPaymentEnabled());
         entity.setBusinessType(request.getBusinessType());
-        entity.setSchemaName("payment_" + request.getCompanyName()
-                .trim()
-                .toLowerCase()
-                .replaceAll("[^a-z0-9\\s]", "")
-                .replaceAll("\\s+", "_"));
+        entity.setSchemaName("payment_" + request.getTenantId().trim().toLowerCase());
         return entity;
     }
 
@@ -147,4 +157,80 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
         entity.setTenantSubscription(tenantSubscription);
         return entity;
     }
+
+    private void mapToPaymentDetails(String fetchPaymentResponse, TenantSubscriptionEntity entity) {
+        SubscriptionPaymentEntity subscriptionPayment = entity.getSubscriptionPayments()
+                .stream()
+                .filter(sp -> sp.getPaymentCompletedAt()
+                        .toLocalDate()
+                        .equals(LocalDate.now(ZoneId.of(Constants.ZONE_ID))))
+                .findFirst()
+                .orElseThrow(() -> new ResourceException(
+                        HttpStatus.NOT_FOUND.value(),
+                        HttpStatus.NOT_FOUND.name(),
+                        Constants.PAYMENT_NOT_FOUND_ERR_MSG
+                ));
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(fetchPaymentResponse);
+
+            String method = root.path("method").asText();
+            subscriptionPayment.setPaymentType(PaymentType.valueOf(method));
+
+            JsonNode paymentDetailsNode = buildPaymentDetailsNode(root, method, mapper);
+
+            subscriptionPayment.setPaymentDetails(paymentDetailsNode);
+
+        } catch (Exception e) {
+            throw new ResourceException(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.name(),
+                    "Failed to map Razorpay payment details"
+            );
+        }
+    }
+
+    private JsonNode buildPaymentDetailsNode(JsonNode root, String method, ObjectMapper mapper) {
+        Map<String, String> details = new HashMap<>();
+        details.put("emailAddress", root.path(PaymentConstants.EMAIL).asText(null));
+        details.put("contactNumber", root.path(PaymentConstants.CONTACT).asText(null));
+
+        switch (method.toUpperCase()) {
+            case PaymentConstants.NET_BANKING:
+                details.put("bankName", root.path(PaymentConstants.BANK).asText(null));
+                details.put("bankTransactionId", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.BANK_TRANSACTION_ID).asText(null));
+                break;
+
+            case PaymentConstants.UPI:
+                details.put("upi", root.path(PaymentConstants.VPA).asText(null));
+                details.put("upiTransactionId", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.RRN).asText(null));
+                break;
+
+            case PaymentConstants.CARD:
+                details.put("cardId", root.path(PaymentConstants.CARD_ID).asText(null));
+                details.put("customerId", root.path(PaymentConstants.CUSTOMER_ID).asText(null));
+                details.put("tokenId", root.path(PaymentConstants.TOKEN_ID).asText(null));
+                details.put("cardAuthCode", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.AUTH_CODE).asText(null));
+                details.put("cardArn", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.ARN).asText(null));
+                details.put("cardTransactionId", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.RRN).asText(null));
+                break;
+
+            case PaymentConstants.WALLET:
+                details.put("walletName", root.path(PaymentConstants.WALLET_NAME).asText(null));
+                details.put("walletTransactionId", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.TRANSACTION_ID).asText(null));
+                break;
+
+            case PaymentConstants.PAY_LATER:
+                details.put("payLater", root.path(PaymentConstants.WALLET_NAME).asText(null));
+                details.put("payLaterTransactionId", root.path(PaymentConstants.ACQUIRER_DATA).path(PaymentConstants.TRANSACTION_ID).asText(null));
+                break;
+
+            default:
+                details.put("rawMethod", method);
+                break;
+        }
+        return mapper.valueToTree(details);
+    }
+
 }

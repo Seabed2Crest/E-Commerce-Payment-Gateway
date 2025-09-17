@@ -12,7 +12,7 @@ public class Generator {
         UUID uuid = UUID.randomUUID();
         String numericUUID = new BigInteger(uuid.toString().replace("-", ""), 16).toString();
         String generatedId = switch (generatorId) {
-            case Constants.SUBSCRIPTION_PAYMENT_ID, Constants.TENANT_PAYMENT_ID -> numericUUID.substring(0, 6);
+            case Constants.TENANT_SUBSCRIPTION_ID, Constants.SUBSCRIPTION_PAYMENT_ID, Constants.TENANT_PAYMENT_ID -> numericUUID.substring(0, 6);
             case null, default -> numericUUID;
         };
         return generatorId + generatedId;

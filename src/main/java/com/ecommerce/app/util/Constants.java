@@ -2,6 +2,8 @@ package com.ecommerce.app.util;
 
 public class Constants {
 
+    public static final String PAYMENT_NOT_FOUND_ERR_MSG = "Payment Not Found.";
+
     private Constants() {
 
     }

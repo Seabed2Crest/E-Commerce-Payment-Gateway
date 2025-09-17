@@ -50,7 +50,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     log.info("Valid token for tenantId: {}", tenantId);
 
                     request.setAttribute("tenantId", tenantId);
-                    TenantContextHolder.setTenantId(tenantId);
+                    String schemaName = "payment_" + tenantId.trim().toLowerCase();
+                    TenantContextHolder.setTenantId(schemaName);
 
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             tenantId, null, null
