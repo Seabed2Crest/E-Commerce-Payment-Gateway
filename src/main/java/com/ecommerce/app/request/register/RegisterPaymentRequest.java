@@ -32,6 +32,9 @@ public class RegisterPaymentRequest {
     @Pattern(regexp = "^\\d{10}$", message = "Phone number must be exactly 10 digits")
     private String phoneNumber;
 
+    @NotBlank(message = "Business type is mandatory")
+    private String businessType;
+
     @NotNull(message = "Service enabled options is required")
     @Size(min = 1, message = "At least one service must be enabled")
     private List<String> servicesEnabled;

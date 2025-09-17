@@ -127,6 +127,12 @@ public class RegisterPaymentServiceImplementation implements RegisterPaymentServ
         entity.setSchemaName(request.getTenantId().toLowerCase().replaceAll("\\s+", "_"));
         entity.setServicesEnabled(request.getServicesEnabled());
         entity.setIsAutoPaymentEnabled(request.getIsAutoPaymentEnabled());
+        entity.setBusinessType(request.getBusinessType());
+        entity.setSchemaName("payment_" + request.getCompanyName()
+                .trim()
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s]", "")
+                .replaceAll("\\s+", "_"));
         return entity;
     }
 
